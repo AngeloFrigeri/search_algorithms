@@ -34,6 +34,10 @@ def search_subida_montanha(mices,holes):
     total_cost = 0
 
     for floor in range(1,1+len(mices)):
+        print "FLOOR", floor
+        print ""
+        print "CURRENT NODE", node_to_climb
+        print ""
         list_of_nodes_in_floor = []     # for each floor, creates a list of possible nodes
 
         prev_mices_left = node_to_climb['mices']         # save prev mices and holes
@@ -52,15 +56,17 @@ def search_subida_montanha(mices,holes):
 
         # sort list_of_nodes_in_floor by cost
         sorted_nodes_in_floor = sorted(list_of_nodes_in_floor, key = lambda node: node['cost'])
-        print "sorted_nodes_in_floor", sorted_nodes_in_floor
+        print "SORTED NODES IN FLOOR", sorted_nodes_in_floor
         print ""
         # picks the next node by the lower cost
         node_to_climb = sorted_nodes_in_floor[0]
-        print "node_to_climb", node_to_climb
+        print "NEW NODE TO CLIMB", node_to_climb
         print ""
         # increment total_cost
         total_cost += node_to_climb["cost"]
         print "TOTAL COST", total_cost
+        print ""
+        print "############"
         print ""
 
     return total_cost

@@ -61,6 +61,9 @@ def search_depth(mices,holes):
         print ""
         print "NEW NODE", node_to_climb
         print ""
+        print "############"
+        print ""
+        
     return total_cost
 
 print search_depth(mices,holes)
