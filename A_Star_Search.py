@@ -2,7 +2,8 @@
 # Numpy, Scipy, Scikit, Pandas
 
 import copy
-
+from numpy import median
+import itertools
 mices = [6, 2, 8, 9]
 holes = [(3,6),(2,1),(3,6),(4,7),(4,7)]
 # mices = [10, 20, 30, 40, 50, 45, 35]
@@ -24,25 +25,67 @@ def menor_custo(list_of_dicts, length_holes):
 	menor = list_of_dicts[0]
 	quantidade = len(list_of_dicts)
 	if quantidade > 1:
-		for i in range(quantidade - 1):
-			if list_of_dicts[i]['cost'] + h_guloso(list_of_dicts[i], length_holes) < list_of_dicts[i + 1]['cost'] + h_guloso(list_of_dicts[i+1], length_holes):
+		for i in range(quantidade):
+			item = list_of_dicts[i]['cost']
+			if item + h_min(list_of_dicts[i]) < menor['cost'] + h_min(menor):
 				menor = list_of_dicts[i]
-			else:
-				menor = list_of_dicts[i + 1]
 	return menor
 
 
 def h_guloso(node, length_holes):
-	mices = node['mices']
-	holes_state = node['holes']
-	cost_holes_mices = [0]*len(mices)
-	temp_holes_state = copy.deepcopy(holes_state)
-	for index, mice in enumerate(mices):
-		for hole in holes_state:
-			if len(holes_state[hole]) < length_holes[hole]:
-				cost_holes_mices[index] += (abs(mice - hole))
-				temp_holes_state[hole].append(mice)
-	return min(cost_holes_mices)
+	mices = copy.deepcopy(node['mices'])
+	holes_state = copy.deepcopy(node['holes'])
+	#combinacao = [zip(x, list(holes_state.keys())) for x in itertools.permutations(mices, len(holes_state))]
+	combinacao = [(mices[i], list(holes_state.keys())[j]) for i in xrange(len(mices)) for j in xrange(len(list(holes_state.keys())))]
+	cost = []
+	for comb in combinacao:
+		esta_cheio = False
+		cost_to_append = 0
+		temp_holes_state = copy.deepcopy(holes_state)
+		for tuple in comb:
+			cost_to_append += abs(tuple[0]-tuple[1])
+			temp_holes_state[tuple[1]].append(tuple[0])
+			if len(temp_holes_state[tuple[1]]) >= length_holes[tuple[1]]:
+				esta_cheio = True
+		if esta_cheio == False:
+			cost.append(cost_to_append)
+	return min(cost)
+
+
+def h_median(node):
+	mices = copy.deepcopy(node['mices'])
+	holes_state = copy.deepcopy(node['holes'])
+	cost = []
+	for hole in holes_state:
+		cost_to_append = 0
+		for mice in mices:
+			cost_to_append += abs(mice-hole)
+		cost.append(cost_to_append)
+	return median(cost)
+
+
+def h_min(node):
+	mices = copy.deepcopy(node['mices'])
+	holes_state = copy.deepcopy(node['holes'])
+	cost = []
+	for hole in holes_state:
+		cost_to_append = 0
+		for mice in mices:
+			cost_to_append += abs(mice-hole)
+		cost.append(cost_to_append)
+	return min(cost)
+
+
+def h_aver(node):
+	mices = copy.deepcopy(node['mices'])
+	holes_state = copy.deepcopy(node['holes'])
+	cost = []
+	for hole in holes_state:
+		cost_to_append = 0
+		for mice in mices:
+			cost_to_append += abs(mice-hole)
+		cost.append(cost_to_append)
+	return sum(cost)/float(len(cost))
 
 
 def abrir(node, length_holes):
