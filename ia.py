@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+# vim:ts=4:sts=4:sw=4:et:wrap:ai:fileencoding=utf-8:
 
 # Libraries Included:
 # Numpy, Scipy, Scikit, Pandas
@@ -9,7 +10,7 @@ import numpy.random as nprnd
 import datetime
 
 # inputs
-iterations = 6
+iterations = 7
 # mices = [6, 2, 8, 9]
 # holes = [(3,6),(2,1),(3,6),(4,7),(4,7)]
 # mices = [10, 20, 30, 40, 50, 45, 35]
@@ -77,11 +78,10 @@ def menor_custo(list_of_dicts):
 	menor = list_of_dicts[0]
 	quantidade = len(list_of_dicts)
 	if quantidade > 1:
-		for i in range(quantidade-1):
-			if list_of_dicts[i]['cost'] < list_of_dicts[i+1]['cost']:
+		for i in range(quantidade):
+			item = list_of_dicts[i]['cost']
+			if item < menor['cost']:
 				menor = list_of_dicts[i]
-			else:
-				menor = list_of_dicts[i+1]
 	return menor
 
 
@@ -104,26 +104,27 @@ def abrir(node, length_holes):
 
 
 def search(mices, holes):
-    abertos = []
-    length_holes = clean_hole(holes)
-    keys = ('mices', 'holes', 'cost')
+	abertos = []
+	length_holes = clean_hole(holes)
+	keys = ('mices', 'holes', 'cost')
 
-    mices_left = mices
-    holes_state = {}
-    for hole, _ in holes:
-        holes_state.setdefault(hole, [])
+	mices_left = mices
+	holes_state = {}
+	for hole, _ in holes:
+		holes_state.setdefault(hole, [])
+
+	nodo_zero = {"mices": mices_left, "holes": holes_state, "cost": 0}
+	abertos.append(nodo_zero)
+	no_de_menor_custo = nodo_zero
     nodes_percorridos = 1
-    nodo_zero = {"mices": mices_left, "holes": holes_state, "cost": 0}
-    abertos.append(nodo_zero)
-    no_de_menor_custo = nodo_zero
-    while len(abertos) != 0:
-        abertos.remove(no_de_menor_custo)
-    	filhos = abrir(no_de_menor_custo, length_holes)
+	while len(abertos) != 0:
+		abertos.remove(no_de_menor_custo)
+		filhos = abrir(no_de_menor_custo, length_holes)
+		abertos += filhos
         nodes_percorridos += len(filhos)
-        abertos += filhos
-    	no_de_menor_custo = menor_custo(abertos)
-    	if no_de_menor_custo['mices'] == []:
-    		return no_de_menor_custo, nodes_percorridos
+		no_de_menor_custo = menor_custo(abertos)
+		if no_de_menor_custo['mices'] == []:
+			return no_de_menor_custo["cost"], nodes_percorridos
 
 
 
@@ -167,11 +168,11 @@ def search_subida_montanha(mices,holes):
         # print "SORTED NODES IN FLOOR", sorted_nodes_in_floor
         # print ""
         # # picks the next node by the lower cost
-        # node_to_climb = sorted_nodes_in_floor[0]
+        node_to_climb = sorted_nodes_in_floor[0]
         # print "NEW NODE TO CLIMB", node_to_climb
         # print ""
         # # increment total_cost
-        # total_cost += node_to_climb["cost"]
+        total_cost += node_to_climb["cost"]
         # print "TOTAL COST", total_cost
         # print ""
         # print "############"
@@ -284,8 +285,8 @@ def search_A(mices, holes):
         nodes_percorridos += len(filhos)
         abertos += filhos
         no_de_menor_custo = menor_custo_A(abertos, length_holes)
-        if no_de_menor_custo['mices'] == []:
-            return no_de_menor_custo, nodes_percorridos
+    	if no_de_menor_custo['mices'] == []:
+    		return no_de_menor_custo["cost"], nodes_percorridos
 
 
 ######### MAIN ###############
@@ -304,38 +305,40 @@ cost = {  "profundidade": [],
 
 for i in range(1,iterations):
     print i
-    mices = list(nprnd.randint(100, size=12*i))
-    holes_positions = list(nprnd.randint(100, size=12*i))
-    holes_size = list(nprnd.randint(100, size=12*i))
+    # mices = [6, 2, 8, 9]
+    # holes = [(3,6),(2,1),(3,6),(4,7),(4,7)]
+    mices = list(nprnd.randint(50, size=5*i))
+    holes_positions = list(nprnd.randint(50, size=5*i))
+    holes_size = list(nprnd.randint(50, size=5*i))
     holes = zip(holes_positions,holes_size)
 
     ti = datetime.datetime.now()
     custo_total, nodes_percorridos = search_depth(mices,holes)
-    t_depth = (datetime.datetime.now() - ti).total_seconds
+    t_depth = (datetime.datetime.now() - ti).total_seconds()
     total_time["profundidade"].append(t_depth)
     nodes["profundidade"].append(nodes_percorridos)
-    cost["profundidade"].append(cost)
+    cost["profundidade"].append(custo_total)
 
     ti = datetime.datetime.now()
     custo_total, nodes_percorridos = search(mices,holes)
-    t_largura = (datetime.datetime.now() - ti).total_seconds
+    t_largura = (datetime.datetime.now() - ti).total_seconds()
     total_time["largura"].append(t_largura)
     nodes["largura"].append(nodes_percorridos)
-    cost["largura"].append(cost)
+    cost["largura"].append(custo_total)
 
     ti = datetime.datetime.now()
     custo_total, nodes_percorridos = search_subida_montanha(mices,holes)
-    t_sm = (datetime.datetime.now() - ti).total_seconds
+    t_sm = (datetime.datetime.now() - ti).total_seconds()
     total_time["montanha"].append(t_sm)
     nodes["montanha"].append(nodes_percorridos)
-    cost["montanha"].append(cost)
+    cost["montanha"].append(custo_total)
 
     ti = datetime.datetime.now()
     custo_total, nodes_percorridos = search_A(mices,holes)
-    t_A = (datetime.datetime.now() - ti).total_seconds
+    t_A = (datetime.datetime.now() - ti).total_seconds()
     total_time["a_*"].append(t_A)
     nodes["a_*"].append(nodes_percorridos)
-    cost["a_*"].append(cost)
+    cost["a_*"].append(custo_total)
 
 fig1 = plt.figure()
 ax0 = fig1.add_subplot(111)
@@ -344,8 +347,8 @@ ax0.plot(range(1,iterations), [time for time in total_time["largura"]], '-', col
 ax0.plot(range(1,iterations), [time for time in total_time["montanha"]], '-', color="r", linewidth=2.5, alpha = 0.7, label='Subida da Montanha')
 ax0.plot(range(1,iterations), [time for time in total_time["a_*"]], '-', color="green", linewidth=2.5, alpha = 0.7, label='A*')
 ax0.legend(loc='upper right', shadow=False, prop={'size':12})
-ax0.set_xlabel('Número de ratos (em dezenas)', fontsize=13)
-ax0.set_ylabel('Tempo', fontsize=13)
+ax0.set_xlabel(u'Número de ratos (em dezenas)', fontsize=13)
+ax0.set_ylabel(u'Tempo', fontsize=13)
 ax0.spines['right'].set_visible(False)
 ax0.spines['top'].set_visible(False)
 ax0.spines['left'].set_visible(False)
@@ -363,8 +366,8 @@ ax0.plot(range(1,iterations), [time for time in nodes["largura"]], '-', color="b
 ax0.plot(range(1,iterations), [time for time in nodes["montanha"]], '-', color="r", linewidth=2.5, alpha = 0.7, label='Subida da Montanha')
 ax0.plot(range(1,iterations), [time for time in nodes["a_*"]], '-', color="green", linewidth=2.5, alpha = 0.7, label='A*')
 ax0.legend(loc='upper right', shadow=False, prop={'size':12})
-ax0.set_xlabel('Número de ratos (em dezenas)', fontsize=13)
-ax0.set_ylabel('Nós percorridos', fontsize=13)
+ax0.set_xlabel(u'Número de ratos (em dezenas)', fontsize=13)
+ax0.set_ylabel(u'Nós percorridos', fontsize=13)
 ax0.spines['right'].set_visible(False)
 ax0.spines['top'].set_visible(False)
 ax0.spines['left'].set_visible(False)
@@ -382,8 +385,8 @@ ax0.plot(range(1,iterations), [time for time in cost["largura"]], '-', color="b"
 ax0.plot(range(1,iterations), [time for time in cost["montanha"]], '-', color="r", linewidth=2.5, alpha = 0.7, label='Subida da Montanha')
 ax0.plot(range(1,iterations), [time for time in cost["a_*"]], '-', color="green", linewidth=2.5, alpha = 0.7, label='A*')
 ax0.legend(loc='upper right', shadow=False, prop={'size':12})
-ax0.set_xlabel('Número de ratos (em dezenas)', fontsize=13)
-ax0.set_ylabel('Distância total', fontsize=13)
+ax0.set_xlabel(u'Número de ratos (em dezenas)', fontsize=13)
+ax0.set_ylabel(u'Distância total', fontsize=13)
 ax0.spines['right'].set_visible(False)
 ax0.spines['top'].set_visible(False)
 ax0.spines['left'].set_visible(False)
