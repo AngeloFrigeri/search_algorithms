@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # New Antecedent/Consequent objects hold universe variables and membership
 # functions
 error = ctrl.Antecedent(np.linspace(-100, 100, 51), 'error')
-delta = ctrl.Antecedent(np.linspace(-50, 50, 7), 'delta')
+delta = ctrl.Antecedent(np.linspace(-10, 10, 7), 'delta')
 output = ctrl.Consequent(np.linspace(-5, 5, 7), 'output')
 
 names = ['ng', 'nm', 'np', 'ze', 'pp', 'pm', 'pg']
@@ -92,13 +92,13 @@ system = ctrl.ControlSystem(rules=[rule0, rule1, rule2, rule3, rule4, rule5, rul
 sim = ctrl.ControlSystemSimulation(system, flush_after_run=21 * 21 + 1)
 
 area_base = 10
-referencia = 50
-altura_atual = 10
+referencia = 70
+altura_atual = 0
 delta_erro = 0
 erro_anterior = 0
 controle_anterior = 0
-vazao_saida = 5
-ts = 5
+vazao_saida = 1
+ts = 2
 
 altura_vec = []
 controle_vec = []
@@ -110,7 +110,9 @@ controle_vec = []
 tempo = []
 error_vec = []
 delta_vec = []
-for i in range(100):
+
+ITER = 3000/(2*ts)
+for i in range(ITER):
 	erro_atual = referencia - altura_atual
 
 	sim.input['error'] = erro_atual
@@ -136,6 +138,9 @@ for i in range(100):
 	elif altura_atual < 0:
 		altura_atual = 0
 
+	if i == int(ITER/2):
+		referencia = referencia/2
+
 	altura_vec.append(altura_atual)
 	controle_vec.append(vazao_controle)
 	error_vec.append(erro_atual)
@@ -160,4 +165,4 @@ ax0.xaxis.label.set_color('#707070')
 ax0.yaxis.label.set_color('#707070')
 ax0.tick_params(axis='x', colors='#707070')
 ax0.tick_params(axis='y', colors='#707070')
-plt.savefig("fuzzy.png", bbox_inches='tight', pad_inches=0.1)
+plt.savefig("fuzzy_imp.png", bbox_inches='tight', pad_inches=0.1)
